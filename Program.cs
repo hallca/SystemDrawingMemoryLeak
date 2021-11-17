@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 
 namespace TestImages
@@ -50,12 +51,14 @@ namespace TestImages
                 {
                     Console.WriteLine("thread id {0,4}, threads count {1,3}",
                         Thread.CurrentThread.ManagedThreadId, ThreadPool.ThreadCount);
+                    LogThreadPoolStats();
+
                     using (var collage = new Bitmap(1000, 1000))
                     {
                         DrawCollageImagesImpl(collage, count);
                     }
                     _evt.Set();
-                    Thread.Sleep(20000); // prevent this thread id reuse
+                    Thread.Sleep(60000); // prevent this thread id reuse
                 }
             );
             _evt.WaitOne();
@@ -84,6 +87,25 @@ namespace TestImages
             using var ms = new MemoryStream(_jpegBytes);
             using var img = Image.FromStream(ms);
             g.DrawImage(img, r.X, r.Y, r.Width, r.Height);
+        }
+
+        static void LogThreadPoolStats()
+        {
+            var sb = new StringBuilder();
+            int workerThreads;
+            int portThreads;
+
+            ThreadPool.GetMaxThreads(out workerThreads, out portThreads);
+            sb.Append($"\nmax worker: \t{workerThreads}, max cp: {portThreads}");
+            
+            ThreadPool.GetMinThreads(out workerThreads, out portThreads);
+            sb.Append($"\nmin worker: \t{workerThreads}, nmin cp: {portThreads}");
+
+            ThreadPool.GetAvailableThreads(out workerThreads, 
+                out portThreads);
+            sb.Append($"\nAvailable worker: \t{workerThreads}, Available cp: {portThreads}\n");
+
+            Console.WriteLine(sb.ToString());
         }
     }
 }
