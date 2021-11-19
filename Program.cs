@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using ImageMagick;
 
 namespace TestImages
@@ -37,7 +38,7 @@ namespace TestImages
                 {
                     Interlocked.Increment(ref outstanding);
 
-                    ThreadPool.QueueUserWorkItem((_) =>
+                    Task.Run(() =>
                     {
                         try
                         {
